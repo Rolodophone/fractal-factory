@@ -3,8 +3,9 @@ import org.openrndr.color.ColorRGBa
 object InfoText {
 	fun draw() {
 		val text = when (state) {
-			State.DRAW_SHAPE -> "Click and drag to draw a shape."
-			State.DEFINE_NEXT_GEN -> TODO()
+			State.DRAW_SHAPE -> "Click and drag to draw a shape. Press ENTER when done."
+			State.DEFINE_NEXT_GEN -> "Define the next gen. Right click to rotate. Scroll to scale. Press ENTER when " +
+				"done"
 			State.DISPLAY_FRACTAL -> "Press SPACE to display the next generation. Press ESC to start again."
 		}
 
