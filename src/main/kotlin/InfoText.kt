@@ -1,0 +1,20 @@
+import org.openrndr.color.ColorRGBa
+
+object InfoText {
+	fun draw() {
+		val text = when (state) {
+			State.DRAW_SHAPE -> "Click and drag to draw a shape."
+			State.DEFINE_NEXT_GEN -> TODO()
+			State.DISPLAY_FRACTAL -> "Press SPACE to display the next generation. Press ESC to start again."
+		}
+
+		//draw background
+		pg.drawer.fill = ColorRGBa.WHITE
+		pg.drawer.stroke = null
+		pg.drawer.rectangle(0.0, 0.0, 7.0 * text.length + 3.0, 20.0)
+
+		//draw text
+		pg.drawer.fill = ColorRGBa.BLACK
+		pg.drawer.text(text, 5.0, 15.0)
+	}
+}
