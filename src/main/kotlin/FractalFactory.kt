@@ -2,10 +2,10 @@ import org.openrndr.KEY_ENTER
 import org.openrndr.KEY_ESCAPE
 import org.openrndr.Program
 import org.openrndr.application
+import org.openrndr.color.ColorHSVa
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.LineCap
 import org.openrndr.draw.isolated
-import org.openrndr.extra.olive.oliveProgram
 import org.openrndr.math.Matrix44
 import org.openrndr.math.Vector2
 import org.openrndr.math.transforms.transform
@@ -16,8 +16,11 @@ var state = State.DRAW_SHAPE
 
 var shape = mutableListOf<MutableList<Vector2>>()
 var transformations = mutableListOf<Matrix44>()
+var shapeOrigin = Vector2.ZERO
 
-var currentTransform = transform { scale(0.5) }
+var currentTransform = Matrix44.IDENTITY
+
+val tempTransforms = mutableListOf<Matrix44>()
 
 enum class State {
     DRAW_SHAPE, DEFINE_NEXT_GEN, DISPLAY_FRACTAL
@@ -28,7 +31,7 @@ fun main() = application {
         width = 1280
         height = 720
     }
-    oliveProgram {
+    program {
         pg = this
 
         extend {
@@ -36,11 +39,13 @@ fun main() = application {
             drawer.lineCap = LineCap.ROUND
 
             //draw background
-            drawer.clear(ColorRGBa.GRAY)
+            drawer.clear(ColorRGBa(0.9, 0.9, 0.9))
 
             //draw base shape
-            drawer.fill = ColorRGBa.BLACK
-            drawer.lineStrips(shape)
+            if (state == State.DRAW_SHAPE) {
+                drawer.stroke = ColorRGBa.BLACK
+                drawer.lineStrips(shape)
+            }
 
             if (state == State.DEFINE_NEXT_GEN) {
                 //draw first gen
@@ -52,11 +57,22 @@ fun main() = application {
                 }
 
                 //draw ghost of next transform
-                drawer.fill = ColorRGBa.GRAY
+                drawer.stroke = ColorRGBa.GRAY
                 drawer.isolated {
                     drawer.model = currentTransform
                     drawer.lineStrips(shape)
                 }
+            }
+
+            //---FOR TESTING-----
+            var hue = 0.0
+            for (transform in tempTransforms) {
+                drawer.isolated {
+                    drawer.stroke = ColorHSVa(hue, 1.0, 0.5).toRGBa()
+                    drawer.model = transform
+                    drawer.lineStrips(shape)
+                }
+                hue += 40.0
             }
 
 
@@ -77,12 +93,19 @@ fun main() = application {
         }
 
         mouse.dragged.listen {
-            shape.last().add(it.position)
+            when (state) {
+                State.DRAW_SHAPE -> shape.last().add(it.position)
+                else -> {}
+            }
         }
 
         mouse.scrolled.listen {
             currentTransform = transform(currentTransform) {
-                scale(2.0.pow(it.rotation.y))
+                val scaleFactor = 1.2.pow(it.rotation.y)
+
+                translate(shapeOrigin)
+                scale(scaleFactor)
+                translate(-shapeOrigin)
             }
         }
 
@@ -90,7 +113,10 @@ fun main() = application {
             when (event.key) {
                 KEY_ENTER -> {
                     when (state) {
-                        State.DRAW_SHAPE -> state = State.DEFINE_NEXT_GEN
+                        State.DRAW_SHAPE -> {
+                            shapeOrigin = meanVector(shape.flatten())
+                            state = State.DEFINE_NEXT_GEN
+                        }
                         State.DEFINE_NEXT_GEN -> state = State.DISPLAY_FRACTAL
                         else -> {}
                     }
@@ -100,6 +126,8 @@ fun main() = application {
                     when (state) {
                         State.DISPLAY_FRACTAL -> {
                             shape = mutableListOf()
+                            transformations = mutableListOf()
+                            currentTransform = Matrix44.IDENTITY
                             state = State.DRAW_SHAPE
                         }
                         else -> {}
