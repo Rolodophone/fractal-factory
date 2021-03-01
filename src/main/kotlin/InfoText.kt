@@ -12,7 +12,7 @@ object InfoText {
 		//draw background
 		pg.drawer.fill = ColorRGBa.WHITE
 		pg.drawer.stroke = null
-		pg.drawer.rectangle(0.0, 0.0, 7.0 * text.length + 3.0, 20.0)
+		pg.drawer.rectangle(0.0, 0.0, 7.5 * text.length + 3.0, 22.0)
 
 		//draw text
 		pg.drawer.fill = ColorRGBa.BLACK
