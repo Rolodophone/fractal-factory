@@ -114,7 +114,7 @@ fun main() = application {
                 KEY_ENTER -> {
                     when (state) {
                         State.DRAW_SHAPE -> {
-                            shapeOrigin = meanVector(shape.flatten())
+                            shapeOrigin = middleVector(shape.flatten())
                             state = State.DEFINE_NEXT_GEN
                         }
                         State.DEFINE_NEXT_GEN -> state = State.DISPLAY_FRACTAL
